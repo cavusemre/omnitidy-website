@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnitidy - AI-Powered Photo Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Magic Wand Logo */
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .wand {
+            width: 80px;
+            height: 8px;
+            background: linear-gradient(90deg, #ff0000 0%, #ff4500 50%, #ffa500 100%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
+        }
+
+        .wand-tip {
+            width: 12px;
+            height: 12px;
+            background: #ffa500;
+            position: absolute;
+            right: -6px;
+            top: -2px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.8);
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(45deg, #ff0000, #ffa500);
+            border-radius: 50%;
+            animation: sparkle 1.5s infinite;
+        }
+
+        .sparkle:nth-child(1) { top: 10px; right: 10px; animation-delay: 0s; }
+        .sparkle:nth-child(2) { top: 20px; right: 30px; animation-delay: 0.3s; }
+        .sparkle:nth-child(3) { top: 35px; right: 15px; animation-delay: 0.6s; }
+        .sparkle:nth-child(4) { top: 5px; right: 35px; animation-delay: 0.9s; }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Grid Pattern Background */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 30px);
+            grid-template-rows: repeat(3, 30px);
+            gap: 4px;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            opacity: 0.3;
+        }
+
+        .grid-cell {
+            background: linear-gradient(135deg, #ff0000 0%, #ff4500 50%, #ffa500 100%);
+            border-radius: 4px;
+            animation: gridPulse 2s infinite;
+        }
+
+        .grid-cell:nth-child(1) { animation-delay: 0s; }
+        .grid-cell:nth-child(2) { animation-delay: 0.1s; }
+        .grid-cell:nth-child(3) { animation-delay: 0.2s; }
+        .grid-cell:nth-child(4) { animation-delay: 0.3s; }
+        .grid-cell:nth-child(5) { animation-delay: 0.4s; }
+        .grid-cell:nth-child(6) { animation-delay: 0.5s; }
+        .grid-cell:nth-child(7) { animation-delay: 0.6s; }
+        .grid-cell:nth-child(8) { animation-delay: 0.7s; }
+        .grid-cell:nth-child(9) { animation-delay: 0.8s; }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ff0000 0%, #ff4500 50%, #ffa500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #aaaaaa;
+            margin-bottom: 50px;
+        }
+
+        .tagline {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .tagline-sub {
+            font-size: 1.3rem;
+            color: #888888;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #ff6b35;
+        }
+
+        .roles {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 60px;
+            align-items: center;
+        }
+
+        .role {
+            background: rgba(255, 69, 0, 0.1);
+            border: 2px solid rgba(255, 69, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px 40px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .role:hover {
+            background: rgba(255, 69, 0, 0.2);
+            border-color: rgba(255, 69, 0, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.3);
+        }
+
+        .role-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ff6b35;
+            margin-bottom: 5px;
+        }
+
+        .role-subtitle {
+            font-size: 1rem;
+            color: #999999;
+        }
+
+        .cta {
+            margin-top: 40px;
+        }
+
+        .cta-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .cta-subtitle {
+            font-size: 1.3rem;
+            color: #888888;
+            margin-bottom: 20px;
+        }
+
+        .email-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff0000 0%, #ff4500 50%, #ffa500 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+        }
+
+        .email-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 69, 0, 0.6);
+        }
+
+        footer {
+            margin-top: 80px;
+            color: #666666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 1rem; }
+            .tagline { font-size: 1.3rem; }
+            .tagline-sub { font-size: 1rem; }
+            .section-title { font-size: 1.2rem; }
+            .role-title { font-size: 1.1rem; }
+            .role-subtitle { font-size: 0.9rem; }
+            .cta-title { font-size: 1.3rem; }
+            .cta-subtitle { font-size: 1rem; }
+            .email-link { 
+                padding: 12px 30px; 
+                font-size: 1rem; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+            <div class="wand">
+                <div class="wand-tip"></div>
+            </div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="grid">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+        </div>
+
+        <!-- Main Title -->
+        <h1>Omnitidy</h1>
+        <p class="subtitle">AI-Powered Photo Organization</p>
+
+        <!-- Tagline -->
+        <div class="tagline">🚀 We're Building Omnitidy</div>
+        <div class="tagline-sub">Omnitidy'i Geliştiriyoruz</div>
+
+        <div class="tagline">🤖 AI-Powered Photo Gallery</div>
+        <div class="tagline-sub">Yapay Zeka Destekli Fotoğraf Galerisi</div>
+
+        <!-- Looking For Section -->
+        <div class="section-title">👥 Looking For / Arıyoruz</div>
+
+        <div class="roles">
+            <div class="role">
+                <div class="role-title">Technical Co-Founder</div>
+                <div class="role-subtitle">Teknik Kurucu Ortak</div>
+            </div>
+
+            <div class="role">
+                <div class="role-title">Investor</div>
+                <div class="role-subtitle">Yatırımcı</div>
+            </div>
+
+            <div class="role">
+                <div class="role-title">Developer Partner</div>
+                <div class="role-subtitle">Geliştirici Ortak</div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta">
+            <div class="cta-title">📧 Join the Journey</div>
+            <div class="cta-subtitle">Yolculuğa Katılın</div>
+            <a href="mailto:hello.omnitidy@gmail.com" class="email-link">
+                hello.omnitidy@gmail.com
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            © 2026 Omnitidy | Building the Future of Photo Organization
+        </footer>
+    </div>
+</body>
+</html>
