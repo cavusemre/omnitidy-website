@@ -4,554 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omnitidy — AI Destekli Fotoğraf Yönetimi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --fire: #ff4500;
-            --amber: #ffa500;
-            --ember: #ff2200;
-            --bg: #080808;
-            --surface: #111111;
-            --border: rgba(255,69,0,0.15);
-            --text: #f0f0f0;
-            --muted: #666;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Noise texture overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.4;
-        }
-
-        /* Glow bg */
-        .glow-bg {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,69,0,0.08) 0%, transparent 70%);
-            top: -200px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* NAV */
-        nav {
-            padding: 28px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 1.4rem;
-            background: linear-gradient(135deg, var(--fire), var(--amber));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 32px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover { color: var(--text); }
-
-        /* HERO */
-        .hero {
-            padding: 100px 0 80px;
-            text-align: center;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,69,0,0.1);
-            border: 1px solid rgba(255,69,0,0.25);
-            border-radius: 100px;
-            padding: 6px 16px;
-            font-size: 0.8rem;
-            color: var(--amber);
-            font-weight: 500;
-            margin-bottom: 32px;
-            letter-spacing: 0.5px;
-        }
-
-        .hero-badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: var(--fire);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-        }
-
-        .hero h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: -3px;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero h1 span {
-            background: linear-gradient(135deg, var(--fire) 0%, var(--amber) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-size: 1.15rem;
-            color: var(--muted);
-            max-width: 520px;
-            margin: 0 auto 48px;
-            line-height: 1.7;
-            font-weight: 300;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, var(--fire), var(--amber));
-            color: white;
-            text-decoration: none;
-            padding: 16px 36px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: 'Syne', sans-serif;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(255,69,0,0.35);
-            letter-spacing: -0.3px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(255,69,0,0.5);
-        }
-
-        .btn-primary svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: transparent;
-            color: var(--muted);
-            text-decoration: none;
-            padding: 16px 28px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            color: var(--text);
-            border-color: rgba(255,69,0,0.4);
-        }
-
-        .hero-note {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: #444;
-        }
-
-        .hero-note span { color: #555; }
-
-        /* FEATURES */
-        .features {
-            padding: 80px 0;
-            border-top: 1px solid var(--border);
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--fire);
-            margin-bottom: 16px;
-        }
-
-        .section-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 48px;
-            color: var(--text);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .feature {
-            background: var(--bg);
-            padding: 32px 28px;
-            transition: background 0.2s;
-        }
-
-        .feature:hover { background: var(--surface); }
-
-        .feature-icon {
-            font-size: 1.8rem;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .feature h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-
-        .feature p {
-            font-size: 0.875rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        /* HIGHLIGHT */
-        .highlight {
-            padding: 60px 0;
-        }
-
-        .highlight-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 52px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 48px;
-            align-items: center;
-        }
-
-        .highlight-card h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 16px;
-            line-height: 1.2;
-        }
-
-        .highlight-card p {
-            color: var(--muted);
-            line-height: 1.7;
-            font-size: 0.95rem;
-        }
-
-        .highlight-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .stat {
-            background: rgba(255,69,0,0.06);
-            border: 1px solid rgba(255,69,0,0.12);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .stat-number {
-            font-family: 'Syne', sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--fire), var(--amber));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-
-        /* CTA */
-        .cta-section {
-            padding: 80px 0;
-            text-align: center;
-            border-top: 1px solid var(--border);
-        }
-
-        .cta-section h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            margin-bottom: 16px;
-        }
-
-        .cta-section p {
-            color: var(--muted);
-            margin-bottom: 36px;
-            font-size: 1rem;
-        }
-
-        /* FOOTER */
-        footer {
-            padding: 32px 0;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: gap;
-            gap: 16px;
-        }
-
-        .footer-logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            background: linear-gradient(135deg, var(--fire), var(--amber));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .footer-text {
-            font-size: 0.8rem;
-            color: #333;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .social-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: color 0.2s;
-        }
-
-        .social-links a:hover { color: var(--fire); }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .features-grid { grid-template-columns: 1fr; }
-            .highlight-card { grid-template-columns: 1fr; padding: 32px; }
-            .nav-links { display: none; }
-            .hero { padding: 60px 0; }
-        }
-
-        /* Entrance animations */
-        .fade-up {
-            opacity: 0;
-            transform: translateY(24px);
-            animation: fadeUp 0.7s ease forwards;
-        }
-
-        .fade-up:nth-child(2) { animation-delay: 0.1s; }
-        .fade-up:nth-child(3) { animation-delay: 0.2s; }
-        .fade-up:nth-child(4) { animation-delay: 0.3s; }
-
-        @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        :root { --fire: #ff4500; --amber: #ffa500; --bg: #080808; --surface: #111; --border: rgba(255,69,0,0.15); --text: #f0f0f0; --muted: #666; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+        .glow-bg { position:fixed; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(255,69,0,0.08) 0%,transparent 70%); top:-200px; left:50%; transform:translateX(-50%); pointer-events:none; z-index:0; }
+        .container { max-width:960px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+        nav { padding:28px 0; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); gap:16px; }
+        .nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; background:linear-gradient(135deg,var(--fire),var(--amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .nav-right { display:flex; align-items:center; gap:16px; }
+        .lang-switcher { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+        .lang-btn { padding:7px 14px; font-size:0.78rem; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; border:none; background:transparent; color:var(--muted); transition:all 0.2s; letter-spacing:0.5px; }
+        .lang-btn.active { background:linear-gradient(135deg,var(--fire),var(--amber)); color:white; }
+        .btn-sm { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--fire),var(--amber)); color:white; text-decoration:none; padding:10px 22px; border-radius:10px; font-size:0.85rem; font-weight:600; font-family:'Syne',sans-serif; transition:all 0.3s; box-shadow:0 4px 20px rgba(255,69,0,0.3); }
+        .btn-sm:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,69,0,0.5); }
+        .btn-sm svg { width:15px; height:15px; }
+        .btn-lg { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--fire),var(--amber)); color:white; text-decoration:none; padding:16px 36px; border-radius:12px; font-size:1rem; font-weight:600; font-family:'Syne',sans-serif; transition:all 0.3s; box-shadow:0 8px 32px rgba(255,69,0,0.35); }
+        .btn-lg:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(255,69,0,0.5); }
+        .btn-lg svg { width:18px; height:18px; }
+        .btn-ghost { display:inline-flex; align-items:center; gap:10px; background:transparent; color:var(--muted); text-decoration:none; padding:16px 28px; border-radius:12px; font-size:1rem; font-weight:500; border:1px solid var(--border); transition:all 0.3s; }
+        .btn-ghost:hover { color:var(--text); border-color:rgba(255,69,0,0.4); }
+        .hero { padding:100px 0 80px; text-align:center; }
+        .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(255,69,0,0.1); border:1px solid rgba(255,69,0,0.25); border-radius:100px; padding:6px 16px; font-size:0.8rem; color:var(--amber); font-weight:500; margin-bottom:32px; letter-spacing:0.5px; }
+        .hero-badge::before { content:''; width:6px; height:6px; background:var(--fire); border-radius:50%; animation:pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(3rem,8vw,6rem); font-weight:800; line-height:1; letter-spacing:-3px; margin-bottom:24px; background:linear-gradient(135deg,#fff 0%,#ccc 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .hero h1 .accent { background:linear-gradient(135deg,var(--fire) 0%,var(--amber) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .hero-sub { font-size:1.15rem; color:var(--muted); max-width:520px; margin:0 auto 48px; line-height:1.7; font-weight:300; }
+        .hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+        .hero-note { margin-top:20px; font-size:0.8rem; color:#444; }
+        .features { padding:80px 0; border-top:1px solid var(--border); }
+        .section-label { font-size:0.75rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--fire); margin-bottom:16px; }
+        .section-title { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:700; letter-spacing:-1px; margin-bottom:48px; }
+        .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; background:var(--border); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+        .feature { background:var(--bg); padding:32px 28px; transition:background 0.2s; }
+        .feature:hover { background:var(--surface); }
+        .feature-icon { font-size:1.8rem; margin-bottom:16px; display:block; }
+        .feature h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:8px; }
+        .feature p { font-size:0.875rem; color:var(--muted); line-height:1.6; }
+        .highlight { padding:60px 0; }
+        .highlight-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:52px; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+        .highlight-card h2 { font-family:'Syne',sans-serif; font-size:2rem; font-weight:700; letter-spacing:-1px; margin-bottom:16px; line-height:1.2; }
+        .highlight-card p { color:var(--muted); line-height:1.7; font-size:0.95rem; }
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .stat { background:rgba(255,69,0,0.06); border:1px solid rgba(255,69,0,0.12); border-radius:12px; padding:20px; }
+        .stat-number { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--fire),var(--amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .stat-label { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+        .cta-section { padding:80px 0; text-align:center; border-top:1px solid var(--border); }
+        .cta-section h2 { font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800; letter-spacing:-1.5px; margin-bottom:16px; }
+        .cta-section p { color:var(--muted); margin-bottom:36px; }
+        footer { padding:32px 0; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+        .footer-logo { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; background:linear-gradient(135deg,var(--fire),var(--amber)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .social-links { display:flex; gap:20px; }
+        .social-links a { color:var(--muted); text-decoration:none; font-size:0.8rem; font-weight:500; transition:color 0.2s; }
+        .social-links a:hover { color:var(--fire); }
+        .footer-copy { font-size:0.8rem; color:#333; }
+        @media(max-width:768px){.features-grid{grid-template-columns:1fr}.highlight-card{grid-template-columns:1fr;padding:32px}.hero{padding:60px 0}.btn-sm{display:none}}
+        .fade-up{opacity:0;transform:translateY(24px);animation:fadeUp 0.7s ease forwards}
+        .fade-up:nth-child(2){animation-delay:0.1s}.fade-up:nth-child(3){animation-delay:0.2s}.fade-up:nth-child(4){animation-delay:0.3s}
+        @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
     </style>
 </head>
 <body>
-    <div class="glow-bg"></div>
+<div class="glow-bg"></div>
+<div class="container">
 
-    <div class="container">
-        <!-- NAV -->
-        <nav>
-            <div class="nav-logo">Omnitidy</div>
-            <ul class="nav-links">
-                <li><a href="#features">Özellikler</a></li>
-                <li><a href="mailto:hello.omnitidy@gmail.com">İletişim</a></li>
-            </ul>
-            <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-primary" style="padding: 10px 22px; font-size: 0.85rem;">
+    <nav>
+        <div class="nav-logo">Omnitidy</div>
+        <div class="nav-right">
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLang('tr')">TR</button>
+                <button class="lang-btn" onclick="setLang('en')">EN</button>
+            </div>
+            <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-sm">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                İndir
-            </a>
-        </nav>
-
-        <!-- HERO -->
-        <div class="hero">
-            <div class="hero-badge fade-up">MVP 1.0.0 — Şimdi Ücretsiz İndir</div>
-            <h1 class="fade-up">Fotoğrafların<br><span>Akıllı Düzeni</span></h1>
-            <p class="hero-sub fade-up">Yapay zeka ile yüz tanıma, bulanık fotoğraf tespiti ve otomatik sınıflandırma. Fotoğrafların hiçbir zaman cihazından çıkmaz.</p>
-            <div class="hero-actions fade-up">
-                <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-primary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                    Ücretsiz İndir — Windows
-                </a>
-                <a href="mailto:hello.omnitidy@gmail.com" class="btn-secondary">
-                    İletişim
-                </a>
-            </div>
-            <p class="hero-note">278 MB · Windows 10/11 · <span>Kurulum gerektiriyor</span></p>
-        </div>
-
-        <!-- FEATURES -->
-        <div class="features" id="features">
-            <div class="section-label">Özellikler</div>
-            <div class="section-title">Her şey yerli yerinde.</div>
-            <div class="features-grid">
-                <div class="feature">
-                    <span class="feature-icon">👤</span>
-                    <h3>Yüz Tanıma</h3>
-                    <p>Fotoğraflardaki kişileri otomatik tanır ve gruplar. Aile albümün bir tık uzağında.</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">🔍</span>
-                    <h3>Bulanık Tespit</h3>
-                    <p>Kalitesiz ve bulanık fotoğrafları otomatik bulur. Silmeden önce sen karar verirsin.</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">📱</span>
-                    <h3>SS Tespiti</h3>
-                    <p>Ekran görüntülerini normal fotoğraflardan ayırır, galerinizi temiz tutar.</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">🌍</span>
-                    <h3>20 Dil</h3>
-                    <p>Türkçe, İngilizce ve 18 dil daha. Dilini seç, kullanmaya başla.</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">🎨</span>
-                    <h3>6 Tema</h3>
-                    <p>Dark, pembe, metal ve daha fazlası. Arayüzü kendi zevkine göre ayarla.</p>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">🛡️</span>
-                    <h3>Tamamen Offline</h3>
-                    <p>Fotoğrafların hiçbir sunucuya gitmiyor. Her şey senin bilgisayarında kalır.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- HIGHLIGHT -->
-        <div class="highlight">
-            <div class="highlight-card">
-                <div>
-                    <div class="section-label">Kapalı Devre</div>
-                    <h2>Fotoğrafların hiçbir yere gitmiyor.</h2>
-                    <p>Omnitidy tamamen çevrimdışı çalışır. İnternet bağlantısı gerektirmez, bulut hesabı istemez. Yapay zeka işlemleri doğrudan senin bilgisayarında gerçekleşir.</p>
-                </div>
-                <div class="highlight-stats">
-                    <div class="stat">
-                        <div class="stat-number">20</div>
-                        <div class="stat-label">Dil Desteği</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">6</div>
-                        <div class="stat-label">Tema</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Bulut Bağlantısı</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">∞</div>
-                        <div class="stat-label">Fotoğraf</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="cta-section">
-            <h2>Hazır mısın?</h2>
-            <p>Ücretsiz indir, hemen kullanmaya başla.</p>
-            <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                Ücretsiz İndir — Windows
+                <span data-key="nav_dl">İndir</span>
             </a>
         </div>
+    </nav>
 
-        <!-- FOOTER -->
-        <footer>
-            <div class="footer-logo">Omnitidy</div>
-            <div class="social-links">
-                <a href="https://linkedin.com" target="_blank">LinkedIn</a>
-                <a href="https://youtube.com" target="_blank">YouTube</a>
-                <a href="https://instagram.com" target="_blank">Instagram</a>
-                <a href="https://x.com" target="_blank">X</a>
-            </div>
-            <div class="footer-text">© 2026 Omnitidy</div>
-        </footer>
+    <div class="hero">
+        <div class="hero-badge fade-up" data-key="badge">MVP 1.0.0 — Şimdi Ücretsiz İndir</div>
+        <h1 class="fade-up"><span data-key="h1a">Fotoğrafların</span><br><span class="accent" data-key="h1b">Akıllı Düzeni</span></h1>
+        <p class="hero-sub fade-up" data-key="sub">Yapay zeka ile yüz tanıma, bulanık fotoğraf tespiti ve otomatik sınıflandırma. Fotoğrafların hiçbir zaman cihazından çıkmaz.</p>
+        <div class="hero-actions fade-up">
+            <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-lg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                <span data-key="dl_btn">Ücretsiz İndir — Windows</span>
+            </a>
+            <a href="mailto:hello.omnitidy@gmail.com" class="btn-ghost" data-key="contact">İletişim</a>
+        </div>
+        <p class="hero-note">278 MB · Windows 10/11</p>
     </div>
+
+    <div class="features">
+        <div class="section-label" data-key="feat_lbl">Özellikler</div>
+        <div class="section-title" data-key="feat_ttl">Her şey yerli yerinde.</div>
+        <div class="features-grid">
+            <div class="feature"><span class="feature-icon">👤</span><h3 data-key="f1t">Yüz Tanıma</h3><p data-key="f1d">Fotoğraflardaki kişileri otomatik tanır ve gruplar. Aile albümün bir tık uzağında.</p></div>
+            <div class="feature"><span class="feature-icon">🔍</span><h3 data-key="f2t">Bulanık Tespit</h3><p data-key="f2d">Kalitesiz ve bulanık fotoğrafları otomatik bulur. Silmeden önce sen karar verirsin.</p></div>
+            <div class="feature"><span class="feature-icon">📱</span><h3 data-key="f3t">SS Tespiti</h3><p data-key="f3d">Ekran görüntülerini normal fotoğraflardan ayırır, galerinizi temiz tutar.</p></div>
+            <div class="feature"><span class="feature-icon">🌍</span><h3 data-key="f4t">20 Dil</h3><p data-key="f4d">Türkçe, İngilizce ve 18 dil daha. Dilini seç, kullanmaya başla.</p></div>
+            <div class="feature"><span class="feature-icon">🎨</span><h3 data-key="f5t">6 Tema</h3><p data-key="f5d">Dark, pembe, metal ve daha fazlası. Arayüzü kendi zevkine göre ayarla.</p></div>
+            <div class="feature"><span class="feature-icon">🛡️</span><h3 data-key="f6t">Tamamen Offline</h3><p data-key="f6d">Fotoğrafların hiçbir sunucuya gitmiyor. Her şey senin bilgisayarında kalır.</p></div>
+        </div>
+    </div>
+
+    <div class="highlight">
+        <div class="highlight-card">
+            <div>
+                <div class="section-label" data-key="hl_lbl">Kapalı Devre</div>
+                <h2 data-key="hl_ttl">Fotoğrafların hiçbir yere gitmiyor.</h2>
+                <p data-key="hl_desc">Omnitidy tamamen çevrimdışı çalışır. İnternet bağlantısı gerektirmez, bulut hesabı istemez. Yapay zeka işlemleri doğrudan senin bilgisayarında gerçekleşir.</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat"><div class="stat-number">20</div><div class="stat-label" data-key="s1">Dil Desteği</div></div>
+                <div class="stat"><div class="stat-number">6</div><div class="stat-label" data-key="s2">Tema</div></div>
+                <div class="stat"><div class="stat-number">0</div><div class="stat-label" data-key="s3">Bulut Bağlantısı</div></div>
+                <div class="stat"><div class="stat-number">∞</div><div class="stat-label" data-key="s4">Fotoğraf</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <h2 data-key="cta_ttl">Hazır mısın?</h2>
+        <p data-key="cta_sub">Ücretsiz indir, hemen kullanmaya başla.</p>
+        <a href="https://github.com/cavusemre/omnitidy-releases/releases/download/v1.0.0/Omnitidy.Setup.1.0.0.exe" class="btn-lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span data-key="dl_btn">Ücretsiz İndir — Windows</span>
+        </a>
+    </div>
+
+    <footer>
+        <div class="footer-logo">Omnitidy</div>
+        <div class="social-links">
+            <a href="https://linkedin.com/company/omnitidy" target="_blank">LinkedIn</a>
+            <a href="https://youtube.com/@Omnitidy-e4g" target="_blank">YouTube</a>
+            <a href="https://instagram.com/omnitidy" target="_blank">Instagram</a>
+            <a href="https://x.com/omnitidy" target="_blank">X</a>
+        </div>
+        <div class="footer-copy">© 2026 Omnitidy</div>
+    </footer>
+
+</div>
+<script>
+const T = {
+    tr: { badge:"MVP 1.0.0 — Şimdi Ücretsiz İndir", h1a:"Fotoğrafların", h1b:"Akıllı Düzeni", sub:"Yapay zeka ile yüz tanıma, bulanık fotoğraf tespiti ve otomatik sınıflandırma. Fotoğrafların hiçbir zaman cihazından çıkmaz.", nav_dl:"İndir", dl_btn:"Ücretsiz İndir — Windows", contact:"İletişim", feat_lbl:"Özellikler", feat_ttl:"Her şey yerli yerinde.", f1t:"Yüz Tanıma", f1d:"Fotoğraflardaki kişileri otomatik tanır ve gruplar. Aile albümün bir tık uzağında.", f2t:"Bulanık Tespit", f2d:"Kalitesiz ve bulanık fotoğrafları otomatik bulur. Silmeden önce sen karar verirsin.", f3t:"SS Tespiti", f3d:"Ekran görüntülerini normal fotoğraflardan ayırır, galerinizi temiz tutar.", f4t:"20 Dil", f4d:"Türkçe, İngilizce ve 18 dil daha. Dilini seç, kullanmaya başla.", f5t:"6 Tema", f5d:"Dark, pembe, metal ve daha fazlası. Arayüzü kendi zevkine göre ayarla.", f6t:"Tamamen Offline", f6d:"Fotoğrafların hiçbir sunucuya gitmiyor. Her şey senin bilgisayarında kalır.", hl_lbl:"Kapalı Devre", hl_ttl:"Fotoğrafların hiçbir yere gitmiyor.", hl_desc:"Omnitidy tamamen çevrimdışı çalışır. İnternet bağlantısı gerektirmez, bulut hesabı istemez. Yapay zeka işlemleri doğrudan senin bilgisayarında gerçekleşir.", s1:"Dil Desteği", s2:"Tema", s3:"Bulut Bağlantısı", s4:"Fotoğraf", cta_ttl:"Hazır mısın?", cta_sub:"Ücretsiz indir, hemen kullanmaya başla." },
+    en: { badge:"MVP 1.0.0 — Download Free Now", h1a:"Your Photos,", h1b:"Smartly Organized", sub:"AI-powered face recognition, blur detection, and automatic classification. Your photos never leave your device.", nav_dl:"Download", dl_btn:"Free Download — Windows", contact:"Contact", feat_lbl:"Features", feat_ttl:"Everything in its place.", f1t:"Face Recognition", f1d:"Automatically detects and groups people in your photos. Your family album, one click away.", f2t:"Blur Detection", f2d:"Finds low quality and blurry photos automatically. You decide before deleting.", f3t:"Screenshot Detection", f3d:"Separates screenshots from real photos, keeping your gallery clean.", f4t:"20 Languages", f4d:"Turkish, English and 18 more. Pick your language and get started.", f5t:"6 Themes", f5d:"Dark, pink, metal and more. Customize the interface to your taste.", f6t:"Fully Offline", f6d:"Your photos never go to any server. Everything stays on your computer.", hl_lbl:"Closed Circuit", hl_ttl:"Your photos go nowhere.", hl_desc:"Omnitidy works completely offline. No internet required, no cloud account needed. AI processing happens directly on your computer.", s1:"Languages", s2:"Themes", s3:"Cloud Connections", s4:"Photos", cta_ttl:"Ready?", cta_sub:"Download free, start using right away." }
+};
+function setLang(lang) {
+    const t = T[lang];
+    document.querySelectorAll('[data-key]').forEach(el => { if(t[el.dataset.key]) el.textContent = t[el.dataset.key]; });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+    document.documentElement.lang = lang;
+}
+</script>
 </body>
 </html>
